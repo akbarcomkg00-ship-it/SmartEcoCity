@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>SmartEcoCity — Чистый город · Умные решения · Лучшее будущее</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: '#12303a',
+            green: '#3f8f27',
+            teal: '#1d7f95',
+          },
+          fontFamily: {
+            sans: ['Manrope', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Manrope', sans-serif; }
+    .step-indicator { transition: all 0.3s; }
+    .card-hover { transition: transform 0.2s, box-shadow 0.2s; }
+    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); }
+  </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // Mock data
+    const translations = {
+      ru: {
+        slogan: 'Чистый город · Умные решения · Лучшее будущее',
+        writeAppeal: 'Написать обращение',
+        problems: 'Городские проблемы',
+        traffic: 'Пробки',
+        trafficDesc: 'Заторы на дорогах мешают жизни города. Сообщите о проблемных участках.',
+        energy: 'Нехватка энергии',
+        energyDesc: 'Отключения света и нестабильное электроснабжение. Мы доставим ваше обращение нужным службам.',
+        waste: 'Переработка мусора',
+        wasteDesc: 'Проблемы с вывозом и переработкой отходов. Вместе сделаем город чище.',
+        news: 'Новости города',
+        all: 'Все',
+        soon: 'Скоро',
+        map: 'Карта проблем по районам',
+        status: 'Статус обращения',
+        charts: 'Графики отключений и вывоза',
+        appealTitle: 'Обращение к власти',
+        step1: 'Выберите место',
+        step2: 'Выберите адресата',
+        step3: 'Ваши данные',
+        step4: 'Описание проблемы',
+        oblast: 'Область / Город',
+        city: 'Город / Село',
+        otherVillage: 'Другое село',
+        villageName: 'Название села',
+        selectOfficial: 'Выберите должностное лицо',
+        fio: 'ФИО',
+        phone: 'Номер телефона',
+        address: 'Адрес дома',
+        work: 'Место работы',
+        under18: 'Мне нет 18 лет',
+        school: 'Школа и класс',
+        parentPhone: 'Телефон родителя',
+        problemText: 'Текст проблемы',
+        category: 'Тема (необязательно)',
+        other: 'Другое',
+        send: 'Отправить обращение',
+        consent: 'Я согласен на обработку персональных данных',
+        required: 'Обязательное поле',
+        success: 'Обращение отправлено!',
+        number: 'Номер обращения',
+        statusSent: 'Отправлено',
+        back: 'Назад',
+        next: 'Далее',
+        home: 'Главная',
+        dark: 'Тёмная',
+        light: 'Светлая',
+        lang: 'Язык'
+      },
+      kg: {
+        slogan: 'Таза шаар · Акылдуу чечимдер · Мыкты келечек',
+        writeAppeal: 'Кайрылуу жазуу',
+        problems: 'Шаардык көйгөйлөр',
+        traffic: 'Тыгындар',
+        trafficDesc: 'Жолдогу тыгындар шаардын жашоосуна тоскоолдук кылат. Көйгөйлүү участоктор жөнүндө билдириңиз.',
+        energy: 'Энергиянын жетишсиздиги',
+        energyDesc: 'Жарыктын өчүшү жана туруксуз электр менен камсыздоо. Биз сиздин кайрылууңузду керектүү кызматтарга жеткиребиз.',
+        waste: 'Таштандыларды кайра иштетүү',
+        wasteDesc: 'Таштандыларды чыгаруу жана кайра иштетүү көйгөйлөрү. Шаарды бирге тазалайлы.',
+        news: 'Шаардын жаңылыктары',
+        all: 'Баары',
+        soon: 'Жакында',
+        map: 'Райондор боюнча көйгөйлөр картасы',
+        status: 'Кайрылуунун статусу',
+        charts: 'Өчүрүүлөрдүн жана чыгаруунун графиктери',
+        appealTitle: 'Бийликке кайрылуу',
+        step1: 'Жайды тандаңыз',
+        step2: 'Адресатты тандаңыз',
+        step3: 'Сиздин маалыматтар',
+        step4: 'Көйгөйдүн сүрөттөлүшү',
+        oblast: 'Облус / Шаар',
+        city: 'Шаар / Айыл',
+        otherVillage: 'Башка айыл',
+        villageName: 'Айылдын аталышы',
+        selectOfficial: 'Кызмат адамын тандаңыз',
+        fio: 'Аты-жөнү',
+        phone: 'Телефон номери',
+        address: 'Үй дареги',
+        work: 'Иш орду',
+        under18: 'Мен 18ге чыга элекмин',
+        school: 'Мектеп жана класс',
+        parentPhone: 'Ата-эненин телефону',
+        problemText: 'Көйгөйдүн тексти',
+        category: 'Тема (милдеттүү эмес)',
+        other: 'Башка',
+        send: 'Кайрылууну жөнөтүү',
+        consent: 'Мен жеке маалыматтарды иштетүүгө макулмун',
+        required: 'Милдеттүү талаа',
+        success: 'Кайрылуу жөнөтүлдү!',
+        number: 'Кайрылуу номери',
+        statusSent: 'Жөнөтүлдү',
+        back: 'Артка',
+        next: 'Кийинки',
+        home: 'Башкы бет',
+        dark: 'Караңгы',
+        light: 'Жарык',
+        lang: 'Тил'
+      }
+    };
+
+    const locations = {
+      'Бишкек': { type: 'city', officials: [
+        { name: 'Айбек Джунушалиев', position: 'Мэр города Бишкек', id: 1 },
+        { name: 'Вице-мэр по транспорту', position: 'Вице-мэр (транспорт)', id: 2 },
+        { name: 'Вице-мэр по ЖКХ', position: 'Вице-мэр (ЖКХ и энергетика)', id: 3 },
+        { name: 'Депутат горкенеша', position: 'Депутат городского кенеша', id: 4 }
+      ]},
+      'Ош': { type: 'city', officials: [
+        { name: 'Мэр Оша', position: 'Мэр города Ош', id: 5 },
+        { name: 'Вице-мэр', position: 'Вице-мэр по городскому хозяйству', id: 6 }
+      ]},
+      'Чуйская область': { type: 'oblast', cities: ['Токмок', 'Кара-Балта', 'Кант', 'Другое село'], officialsByPlace: {
+        'Токмок': [{ name: 'Мэр Токмока', position: 'Мэр', id: 10 }],
+        'default': [{ name: 'Глава района', position: 'Глава района', id: 11 }, { name: 'Глава айыл аймака', position: 'Глава айыл аймака', id: 12 }]
+      }},
+      'Ошская область': { type: 'oblast', cities: ['Кара-Суу', 'Узген', 'Другое село'], officialsByPlace: { default: [{ name: 'Глава района', position: 'Глава района', id: 20 }] } },
+      'Иссык-Кульская область': { type: 'oblast', cities: ['Каракол', 'Балыкчы', 'Другое село'], officialsByPlace: { default: [{ name: 'Глава района', position: 'Глава района', id: 30 }] } },
+      'Нарынская область': { type: 'oblast', cities: ['Нарын', 'Другое село'], officialsByPlace: { default: [{ name: 'Глава района', position: 'Глава района', id: 40 }] } },
+      'Таласская область': { type: 'oblast', cities: ['Талас', 'Другое село'], officialsByPlace: { default: [{ name: 'Глава района', position: 'Глава района', id: 50 }] } },
+      'Джалал-Абадская область': { type: 'oblast', cities: ['Джалал-Абад', 'Другое село'], officialsByPlace: { default: [{ name: 'Глава района', position: 'Глава района', id: 60 }] } },
+      'Баткенская область': { type: 'oblast', cities: ['Баткен', 'Другое село'], officialsByPlace: { default: [{ name: 'Глава района', position: 'Глава района', id: 70 }] } }
+    };
+
+    const newsData = [
+      { id: 1, category: 'traffic', title: 'Новые меры по разгрузке центра Бишкека', text: 'Городские власти планируют оптимизировать светофоры на основных магистралях.', date: '2026-10-15' },
+      { id: 2, category: 'energy', title: 'График отключений на октябрь', text: 'В ряде районов возможны кратковременные отключения для ремонтных работ.', date: '2026-10-14' },
+      { id: 3, category: 'waste', title: 'Запуск новых пунктов приёма вторсырья', text: 'В Бишкеке открылись дополнительные пункты сбора пластика и бумаги.', date: '2026-10-12' },
+      { id: 4, category: 'traffic', title: 'Ремонт дороги в Оше', text: 'Завершается асфальтирование центральной улицы.', date: '2026-10-10' }
+    ];
+
+    function App() {
+      const [lang, setLang] = useState('ru');
+      const [dark, setDark] = useState(false);
+      const [view, setView] = useState('home');
+      const [step, setStep] = useState(1);
+      const [form, setForm] = useState({
+        locationType: '',
+        place: '',
+        otherVillage: '',
+        officialId: null,
+        fio: '',
+        phone: '',
+        address: '',
+        work: '',
+        under18: false,
+        school: '',
+        parentPhone: '',
+        problem: '',
+        category: '',
+        consent: false
+      });
+      const [errors, setErrors] = useState({});
+      const [submitted, setSubmitted] = useState(null);
+      const [newsFilter, setNewsFilter] = useState('all');
+
+      const t = translations[lang];
+
+      useEffect(() => {
+        if (dark) document.documentElement.classList.add('dark');
+        else document.documentElement.classList.remove('dark');
+      }, [dark]);
+
+      const getOfficials = () => {
+        if (!form.locationType || !form.place) return [];
+        const loc = locations[form.locationType];
+        if (!loc) return [];
+        if (loc.type === 'city') return loc.officials;
+        const place = form.place === 'Другое село' ? form.otherVillage : form.place;
+        return loc.officialsByPlace[form.place] || loc.officialsByPlace.default || [];
+      };
+
+      const validateStep = (s) => {
+        const e = {};
+        if (s === 1) {
+          if (!form.locationType) e.locationType = t.required;
+          if (!form.place) e.place = t.required;
+          if (form.place === 'Другое село' && !form.otherVillage.trim()) e.otherVillage = t.required;
+        }
+        if (s === 2) {
+          if (!form.officialId) e.official = t.required;
+        }
+        if (s === 3) {
+          if (!form.fio.trim()) e.fio = t.required;
+          if (!form.phone.trim()) e.phone = t.required;
+          if (!form.address.trim()) e.address = t.required;
+          if (form.under18) {
+            if (!form.school.trim()) e.school = t.required;
+            if (!form.parentPhone.trim()) e.parentPhone = t.required;
+          } else if (!form.work.trim()) e.work = t.required;
+        }
+        if (s === 4) {
+          if (!form.problem.trim()) e.problem = t.required;
+          if (!form.consent) e.consent = 'Необходимо согласие';
+        }
+        setErrors(e);
+        return Object.keys(e).length === 0;
+      };
+
+      const nextStep = () => {
+        if (validateStep(step)) setStep(step + 1);
+      };
+
+      const submit = () => {
+        if (!validateStep(4)) return;
+        const text = form.problem.toLowerCase();
+        let aiCategory = form.category || 'other';
+        if (text.includes('пробк') || text.includes('тыгын') || text.includes('дорога')) aiCategory = 'traffic';
+        if (text.includes('свет') || text.includes('энерг') || text.includes('электр') || text.includes('жарык')) aiCategory = 'energy';
+        if (text.includes('мусор') || text.includes('таштанды') || text.includes('отход')) aiCategory = 'waste';
+        let priority = 'normal';
+        if (text.includes('опасно') || text.includes('школ') || text.includes('больниц') || text.includes('длительн')) priority = 'high';
+
+        const official = getOfficials().find(o => o.id === form.officialId);
+        const number = 'SEC-' + Date.now().toString().slice(-6);
+        const appeal = {
+          number,
+          ...form,
+          official: official?.name,
+          position: official?.position,
+          aiCategory,
+          priority,
+          status: 'sent',
+          date: new Date().toISOString()
+        };
+        const existing = JSON.parse(localStorage.getItem('appeals') || '[]');
+        existing.push(appeal);
+        localStorage.setItem('appeals', JSON.stringify(existing));
+        setSubmitted(appeal);
+        setView('success');
+      };
+
+      const filteredNews = newsData.filter(n => newsFilter === 'all' || n.category === newsFilter);
+
+      return (
+        <div className="min-h-screen flex flex-col">
+          <header className="bg-primary text-white sticky top-0 z-50 shadow-md">
+            <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-3 cursor-pointer" onClick={() => setView('home')}>
+                <div className="w-10 h-10 bg-green rounded-lg flex items-center justify-center font-bold text-lg">S</div>
+                <div>
+                  <div className="font-bold text-lg leading-tight">SmartEcoCity</div>
+                  <div className="text-xs opacity-80 hidden sm:block">{t.slogan}</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button onClick={() => setLang(lang === 'ru' ? 'kg' : 'ru')} className="px-3 py-1 rounded-full bg-teal text-sm font-medium">
+                  {lang === 'ru' ? 'KG' : 'RU'}
+                </button>
+                <button onClick={() => setDark(!dark)} className="px-3 py-1 rounded-full bg-white/20 text-sm">
+                  {dark ? t.light : t.dark}
+                </button>
+              </div>
+            </div>
+          </header>
+
+          <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-6">
+            {view === 'home' && (
+              <>
+                <section className="text-center py-12 px-4">
+                  <h1 className="text-3xl sm:text-5xl font-extrabold text-primary dark:text-teal mb-4">{t.slogan}</h1>
+                  <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
+                    {lang === 'ru' 
+                      ? 'Платформа для жителей Кыргызстана. Сообщайте о проблемах города — система доставит обращение нужному чиновнику.'
+                      : 'Кыргызстандын жашоочулары үчүн платформа. Шаардын көйгөйлөрү жөнүндө билдириңиз — система кайрылууну керектүү кызмат адамына жеткирет.'}
+                  </p>
+                  <button onClick={() => { setView('appeal'); setStep(1); setSubmitted(null); }} className="bg-green hover:bg-green/90 text-white text-lg font-semibold px-8 py-4 rounded-2xl shadow-lg">
+                    {t.writeAppeal}
+                  </button>
+                </section>
+
+                <section className="mb-12">
+                  <h2 className="text-2xl font-bold mb-6 text-center">{t.problems}</h2>
+                  <div className="grid md:grid-cols-3 gap-6">
+                    {[
+                      { title: t.traffic, desc: t.trafficDesc, color: 'border-teal' },
+                      { title: t.energy, desc: t.energyDesc, color: 'border-green' },
+                      { title: t.waste, desc: t.wasteDesc, color: 'border-primary' }
+                    ].map((p, i) => (
+                      <div key={i} className={`card-hover bg-white dark:bg-gray-800 p-6 rounded-2xl border-l-4 ${p.color} shadow`}>
+                        <h3 className="font-bold text-xl mb-2">{p.title}</h3>
+                        <p className="text-gray-600 dark:text-gray-300">{p.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                <section className="mb-12">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold">{t.news}</h2>
+                    <button onClick={() => setView('news')} className="text-teal font-medium">{lang === 'ru' ? 'Все новости →' : 'Бардык жаңылыктар →'}</button>
+                  </div>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    {newsData.slice(0, 2).map(n => (
+                      <div key={n.id} className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow">
+                        <div className="text-xs text-teal font-semibold mb-1">{n.category.toUpperCase()}</div>
+                        <h3 className="font-bold">{n.title}</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{n.text}</p>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                <section className="bg-gradient-to-r from-primary to-teal text-white p-8 rounded-3xl text-center">
+                  <h2 className="text-2xl font-bold mb-4">{t.soon}</h2>
+                  <div className="grid sm:grid-cols-3 gap-4 text-sm">
+                    <div>{t.map}</div>
+                    <div>{t.status}</div>
+                    <div>{t.charts}</div>
+                  </div>
+                </section>
+              </>
+            )}
+
+            {view === 'appeal' && (
+              <div className="max-w-lg mx-auto">
+                <h2 className="text-2xl font-bold mb-6 text-center">{t.appealTitle}</h2>
+                <div className="flex justify-between mb-8 text-xs">
+                  {[1,2,3,4].map(s => (
+                    <div key={s} className={`step-indicator flex-1 text-center py-2 rounded-full mx-1 ${step >= s ? 'bg-green text-white' : 'bg-gray-200 dark:bg-gray-700'}`}>
+                      {s}
+                    </div>
+                  ))}
+                </div>
+
+                {step === 1 && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block font-medium mb-1">{t.oblast}</label>
+                      <select value={form.locationType} onChange={e => setForm({...form, locationType: e.target.value, place: '', otherVillage: ''})} className="w-full p-3 rounded-xl border dark:bg-gray-800 dark:border-gray-700">
+                        <option value="">—</option>
+                        {Object.keys(locations).map(k => <option key={k} value={k}>{k}</option>)}
+                      </select>
+                      {errors.locationType && <p className="text-red-500 text-sm">{errors.locationType}</p>}
+                    </div>
+                    {form.locationType && (
+                      <div>
+                        <label className="block font-medium mb-1">{t.city}</label>
+                        <select value={form.place} onChange={e => setForm({...form, place: e.target.value})} className="w-full p-3 rounded-xl border dark:bg-gray-800 dark:border-gray-700">
+                          <option value="">—</option>
+                          {(locations[form.locationType].type === 'city' ? [form.locationType] : locations[form.locationType].cities).map(c => (
+                            <option key={c} value={c}>{c}</option>
+                          ))}
+                        </select>
+                        {errors.place && <p className="text-red-500 text-sm">{errors.place}</p>}
+                      </div>
+                    )}
+                    {form.place === 'Другое село' && (
+                      <div>
+                        <label className="block font-medium mb-1">{t.villageName}</label>
+                        <input value={form.otherVillage} onChange={e => setForm({...form, otherVillage: e.target.value})} className="w-full p-3 rounded-xl border dark:bg-gray-800 dark:border-gray-700" />
+                        {errors.otherVillage && <p className="text-red-500 text-sm">{errors.otherVillage}</p>}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {step === 2 && (
+                  <div>
+                    <h3 className="font-medium mb-4">{t.selectOfficial}</h3>
+                    <div className="space-y-3">
+                      {getOfficials().map(off => (
+                        <div key={off.id} onClick={() => setForm({...form, officialId: off.id})} className={`p-4 rounded-xl border-2 cursor-pointer card-hover ${form.officialId === off.id ? 'border-green bg-green/10' : 'border-gray-200 dark:border-gray-700'}`}>
+                          <div className="font-bold">{off.name}</div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">{off.position}</div>
+                        </div>
+                      ))}
+                    </div>
+                    {errors.official && <p className="text-red-500 text-sm mt-2">{errors.official}</p>}
+                  </div>
+                )}
+
+                {step === 3 && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block font-medium mb-1">{t.fio}</label>
+                      <input value={form.fio} onChange={e => setForm({...form, fio: e.target.value})} className="w-full p-3 rounded-xl border dark:bg-gray-800 dark:border-gray-700" />
+                      {errors.fio && <p className="text-red-500 text-sm">{errors.fio}</p>}
+                    </div>
+                    <div>
+                      <label className="block font-medium mb-1">{t.phone}</label>
+                      <input value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} placeholder="+996" className="w-full p-3 rounded-xl border dark:bg-gray-800 dark:border-gray-700" />
+                      {errors.phone && <p className="text-red-500 text-sm">{errors.phone}</p>}
+                    </div>
+                    <div>
+                      <label className="block font-medium mb-1">{t.address}</label>
+                      <input value={form.address} onChange={e => setForm({...form, address: e.target.value})} className="w-full p-3 rounded-xl border dark:bg-gray-800 dark:border-gray-700" />
+                      {errors.address && <p className="text-red-500 text-sm">{errors.address}</p>}
+                    </div>
+                    <label className="flex items-center gap-2">
+                      <input type="checkbox" checked={form.under18} onChange={e => setForm({...form, under18: e.target.checked})} />
+                      {t.under18}
+                    </label>
+                    {form.under18 ? (
+                      <>
+                        <div>
+                          <label className="block font-medium mb-1">{t.school}</label>
+                          <input value={form.school} onChange={e => setForm({...form, school: e.target.value})} className="w-full p-3 rounded-xl border dark:bg-gray-800 dark:border-gray-700" />
+                          {errors.school && <p className="text-red-500 text-sm">{errors.school}</p>}
+                        </div>
+                        <div>
+                          <label className="block font-medium mb-1">{t.parentPhone}</label>
+                          <input value={form.parentPhone} onChange={e => setForm({...form, parentPhone: e.target.value})} className="w-full p-3 rounded-xl border dark:bg-gray-800 dark:border-gray-700" />
+                          {errors.parentPhone && <p className="text-red-500 text-sm">{errors.parentPhone}</p>}
+                        </div>
+                      </>
+                    ) : (
+                      <div>
+                        <label className="block font-medium mb-1">{t.work}</label>
+                        <input value={form.work} onChange={e => setForm({...form, work: e.target.value})} className="w-full p-3 rounded-xl border dark:bg-gray-800 dark:border-gray-700" />
+                        {errors.work && <p className="text-red-500 text-sm">{errors.work}</p>}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {step === 4 && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block font-medium mb-1">{t.problemText}</label>
+                      <textarea value={form.problem} onChange={e => setForm({...form, problem: e.target.value})} rows={5} className="w-full p-3 rounded-xl border dark:bg-gray-800 dark:border-gray-700" />
+                      {errors.problem && <p className="text-red-500 text-sm">{errors.problem}</p>}
+                    </div>
+                    <div>
+                      <label className="block font-medium mb-1">{t.category}</label>
+                      <select value={form.category} onChange={e => setForm({...form, category: e.target.value})} className="w-full p-3 rounded-xl border dark:bg-gray-800 dark:border-gray-700">
+                        <option value="">{t.other}</option>
+                        <option value="traffic">{t.traffic}</option>
+                        <option value="energy">{t.energy}</option>
+                        <option value="waste">{t.waste}</option>
+                      </select>
+                    </div>
+                    <label className="flex items-start gap-2 text-sm">
+                      <input type="checkbox" checked={form.consent} onChange={e => setForm({...form, consent: e.target.checked})} className="mt-1" />
+                      {t.consent}
+                    </label>
+                    {errors.consent && <p className="text-red-500 text-sm">{errors.consent}</p>}
+                    <p className="text-xs text-gray-500">ИИ автоматически определит тему и приоритет, оформит официальное письмо и отправит его адресату.</p>
+                  </div>
+                )}
+
+                <div className="flex gap-3 mt-8">
+                  {step > 1 && <button onClick={() => setStep(step - 1)} className="flex-1 py-3 border rounded-xl font-medium">{t.back}</button>}
+                  {step < 4 && <button onClick={nextStep} className="flex-1 py-3 bg-teal text-white rounded-xl font-medium">{t.next}</button>}
+                  {step === 4 && <button onClick={submit} className="flex-1 py-3 bg-green text-white rounded-xl font-semibold text-lg">{t.send}</button>}
+                </div>
+              </div>
+            )}
+
+            {view === 'success' && submitted && (
+              <div className="max-w-lg mx-auto text-center py-12">
+                <div className="w-20 h-20 bg-green rounded-full flex items-center justify-center mx-auto mb-6 text-white text-4xl">✓</div>
+                <h2 className="text-2xl font-bold mb-4">{t.success}</h2>
+                <p className="mb-2">{t.number}: <span className="font-mono font-bold">{submitted.number}</span></p>
+                <p className="mb-6">Статус: <span className="text-green font-medium">{t.statusSent}</span></p>
+                <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-xl text-left text-sm mb-6">
+                  <p><strong>Адресат:</strong> {submitted.official}</p>
+                  <p><strong>Тема (ИИ):</strong> {submitted.aiCategory}</p>
+                  <p><strong>Приоритет:</strong> {submitted.priority}</p>
+                </div>
+                <button onClick={() => setView('home')} className="bg-primary text-white px-6 py-3 rounded-xl">{t.home}</button>
+              </div>
+            )}
+
+            {view === 'news' && (
+              <div>
+                <h2 className="text-2xl font-bold mb-6">{t.news}</h2>
+                <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+                  {['all', 'traffic', 'energy', 'waste'].map(f => (
+                    <button key={f} onClick={() => setNewsFilter(f)} className={`px-4 py-2 rounded-full whitespace-nowrap ${newsFilter === f ? 'bg-teal text-white' : 'bg-gray-200 dark:bg-gray-700'}`}>
+                      {f === 'all' ? t.all : f === 'traffic' ? t.traffic : f === 'energy' ? t.energy : t.waste}
+                    </button>
+                  ))}
+                </div>
+                <div className="space-y-4">
+                  {filteredNews.map(n => (
+                    <div key={n.id} className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow">
+                      <div className="flex justify-between text-xs text-gray-500 mb-2">
+                        <span className="text-teal font-semibold">{n.category}</span>
+                        <span>{n.date}</span>
+                      </div>
+                      <h3 className="font-bold text-lg">{n.title}</h3>
+                      <p className="mt-2 text-gray-600 dark:text-gray-300">{n.text}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </main>
+
+          <footer className="bg-primary text-white/70 text-center py-6 text-sm mt-auto">
+            <div className="max-w-6xl mx-auto px-4">
+              SmartEcoCity © 2026 · {t.slogan}
+            </div>
+          </footer>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
